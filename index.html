@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Simple Calculator</title>
+	<link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+	<main class="calculator" role="application" aria-label="Simple calculator">
+	    <h2>Calculator</h2>
+        <div class="display" aria-hidden="false">
+			<input id="display" type="text" inputmode="decimal" aria-label="Calculator display" readonly />
+		</div>
+		<div class="buttons" role="group" aria-label="Calculator buttons">
+			<button class="func" data-action="clear">C</button>
+			<button class="func" data-action="back">←</button>
+			<button class="func" data-value="(">(</button>
+			<button class="func" data-value=")">)</button>
+
+			<button class="func" data-value="/">÷</button>
+			<button class="num" data-value="7">7</button>
+			<button class="num" data-value="8">8</button>
+			<button class="num" data-value="9">9</button>
+
+			<button class="op" data-value="*">×</button>
+			<button class="num" data-value="4">4</button>
+			<button class="num" data-value="5">5</button>
+			<button class="num" data-value="6">6</button>
+
+			<button class="op" data-value="-">−</button>
+			<button class="num" data-value="1">1</button>
+			<button class="num" data-value="2">2</button>
+			<button class="num" data-value="3">3</button>
+
+			<button class="op" data-value="+">+</button>
+			<button class="num zero" data-value="0">0</button>
+			<button class="num" data-value=".">.</button>
+			<button class="equal" data-action="equals">=</button>
+		</div>
+	</main>
+
+	<script>
+		const display = document.getElementById('display');
+
+		function appendValue(v){
+			if(display.value === 'Error') display.value = '';
+			display.value += v;
+		}
+
+		function clearDisplay(){ display.value = ''; }
+		function backspace(){ display.value = display.value.slice(0, -1); }
+
+		function safeEvaluate(expr){
+			if(!/^[0-9+\-*/().\s]+$/.test(expr)) throw new Error('Invalid');
+			return Function('"use strict"; return (' + expr + ')')();
+		}
+
+		function calculate(){
+			const expr = display.value.replace(/÷/g, '/').replace(/×/g, '*');
+			try{
+				const result = safeEvaluate(expr);
+				display.value = String(result);
+			}catch(e){
+				display.value = 'Error';
+			}
+		}
+
+		document.querySelectorAll('.buttons button').forEach(btn => {
+			btn.addEventListener('click', () => {
+				const v = btn.dataset.value;
+				const action = btn.dataset.action;
+				if(action === 'clear') return clearDisplay();
+				if(action === 'back') return backspace();
+				if(action === 'equals') return calculate();
+				if(v) return appendValue(v);
+			});
+		});
+
+		window.addEventListener('keydown', (e) => {
+			if(e.key === 'Enter') { e.preventDefault(); return calculate(); }
+			if(e.key === 'Escape') { e.preventDefault(); return clearDisplay(); }
+			if(e.key === 'Backspace') { e.preventDefault(); return backspace(); }
+			if(/^[0-9+\-*/().]$/.test(e.key)) { e.preventDefault(); appendValue(e.key); }
+		});
+	</script>
+</body>
+</html>
